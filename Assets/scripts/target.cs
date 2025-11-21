@@ -4,16 +4,16 @@ using UnityEngine;
 
 public class Target : MonoBehaviour
 {
-    public GameObject hitEffectPrefab;  // Effet de particules à assigner
+    public GameObject hitEffectPrefab;  // Effet de particules ï¿½ assigner
 
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Bullet"))
         {
-            // Faire apparaître l'effet de particules à la position de la cible
+            // Faire apparaï¿½tre l'effet de particules ï¿½ la position de la cible
             Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
 
-            // Détruire la cible
+            // Dï¿½truire la cible
             Destroy(gameObject);
         }
     }
