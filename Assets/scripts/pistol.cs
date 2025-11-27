@@ -16,10 +16,20 @@ public class Pistol : MonoBehaviour
     // Pour la détection de la plateforme (simplifié pour l'exemple)
     private bool isQuestBuild = false;
 
+    void Start()
+    {
+        // Une manière simple et efficace de détecter si on est sur une build Android (typiquement pour Quest)
+        // Cette portion de code ne sera incluse que si la plateforme de build est Android.
+        #if UNITY_ANDROID
+        isQuestBuild = true;
+        #endif
+    }
+
     public void FireBullet()
     {
         //--- Instantiate a bullet and fire it forward
         GameObject spawnedBullet = Instantiate(bullet);
+        spawnedBullet.tag = "bullet"; // S'assurer que le tag est bien "bullet"
         spawnedBullet.transform.position = firePoint.position;
         spawnedBullet.GetComponent<Rigidbody>().AddForce(firePoint.forward * bulletSpeed, ForceMode.Impulse);
         

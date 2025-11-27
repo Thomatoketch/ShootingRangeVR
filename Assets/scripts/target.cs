@@ -12,9 +12,6 @@ public class Target : MonoBehaviour
         {
             // Faire appara�tre l'effet de particules � la position de la cible
             Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
-
-            // D�truire la cible
-            Destroy(gameObject);
         }
     }
 
