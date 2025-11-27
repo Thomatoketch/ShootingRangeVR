@@ -37,8 +37,6 @@ public class Pistol : MonoBehaviour
 
         //--- Destroy the bullet after 5 seconds
         Destroy(spawnedBullet, 5);
-
-
     }
 
     private void TriggerMuzzleFlash()
