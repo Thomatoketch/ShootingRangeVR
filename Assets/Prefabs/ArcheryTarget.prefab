@@ -76,6 +76,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9043621831622440160, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -3704563456361051248, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
@@ -84,6 +88,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -1314872803122130754, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4843771207568094109}
+    - targetCorrespondingSourceObject: {fileID: -1314872803122130754, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 653719745843903443}
   m_SourcePrefab: {fileID: 100100000, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
 --- !u!1 &1675321250826716124 stripped
 GameObject:
@@ -112,3 +119,16 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 2403435677658566425, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
+--- !u!114 &653719745843903443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1675321250826716124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2941d96e4c2424448385d3bce535a5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Target
+  hitEffectKey: HitEffectFX

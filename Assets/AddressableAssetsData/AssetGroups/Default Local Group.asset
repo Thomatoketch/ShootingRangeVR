@@ -22,7 +22,7 @@ MonoBehaviour:
     - PCVR
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5b8df1eef55a21e458dfaf1fef22d72d
-    m_Address: ImpactFX
+    m_Address: HitEffectFX
     m_ReadOnly: 0
     m_SerializedLabels:
     - PCVR
@@ -34,7 +34,7 @@ MonoBehaviour:
     - Quest
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e92b7ded0c14a024381f086600a390d3
-    m_Address: ImpactFX
+    m_Address: HitEffectFX
     m_ReadOnly: 0
     m_SerializedLabels:
     - Quest
