@@ -997,8 +997,7 @@ MonoBehaviour:
   firePoint: {fileID: 1689144764}
   bullet: {fileID: 5475061524167037493, guid: fe5d17f72382fe84dbae6c1d071828e7, type: 3}
   bulletSpeed: 20
-  muzzleFlashPrefabPCVR: {fileID: 3968751505917675830, guid: 13e62c0e47726c3448ed058c3bc53da6, type: 3}
-  muzzleFlashPrefabQuest: {fileID: 3968751505917675830, guid: 13e62c0e47726c3448ed058c3bc53da6, type: 3}
+  muzzleFlashKey: MuzzleFlashFX
 --- !u!1 &1689144763
 GameObject:
   m_ObjectHideFlags: 0
@@ -1224,6 +1223,54 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1999516026
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1999516028}
+  - component: {fileID: 1999516027}
+  m_Layer: 0
+  m_Name: ObjectPoolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1999516027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999516026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98b608f191eaaf741840b859fd89c07a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectPoolManager
+  pools:
+  - tag: Bullet
+    prefab: {fileID: 5475061524167037493, guid: fe5d17f72382fe84dbae6c1d071828e7, type: 3}
+    size: 10
+--- !u!4 &1999516028
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999516026}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.92976, y: 0.69668, z: -1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2046629158
 GameObject:
   m_ObjectHideFlags: 0
@@ -1675,3 +1722,4 @@ SceneRoots:
   - {fileID: 1783572214}
   - {fileID: 1703568386}
   - {fileID: 1237601791}
+  - {fileID: 1999516028}

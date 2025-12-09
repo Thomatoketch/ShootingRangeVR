@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets; // Indispensable
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class Pistol : MonoBehaviour
 {
@@ -9,19 +11,18 @@ public class Pistol : MonoBehaviour
     public GameObject bullet; // Votre préfabriqué de projectile
     public float bulletSpeed = 20f;
 
-    [Header("Références aux Particules (Muzzle Flash)")]
-    public GameObject muzzleFlashPrefabPCVR; // Votre préfabriqué d'effet de tir (version riche)
-    public GameObject muzzleFlashPrefabQuest; // Votre préfabriqué d'effet de tir (version optimisée)
-    
-    // Pour la détection de la plateforme (simplifié pour l'exemple)
-    private bool isQuestBuild = false;
+    [Header("Addressables Keys")]
+    public string muzzleFlashKey = "MuzzleFlashFX";
+    private string currentLabel;
 
     void Start()
     {
         // Une manière simple et efficace de détecter si on est sur une build Android (typiquement pour Quest)
         // Cette portion de code ne sera incluse que si la plateforme de build est Android.
         #if UNITY_ANDROID
-        isQuestBuild = true;
+            currentLabel = "Quest"; 
+        #else
+            currentLabel = "PCVR";
         #endif
     }
 
@@ -43,30 +44,24 @@ public class Pistol : MonoBehaviour
 
     private void TriggerMuzzleFlash()
     {
-        // Choisir la bonne version du prefab selon la plateforme ciblée pour le build
-        GameObject selectedMuzzleFlash = isQuestBuild ? muzzleFlashPrefabQuest : muzzleFlashPrefabPCVR;
+        // Chargement dynamique avec Addressables
+        // Note: On combine Key et Label pour filtrer
+        Addressables.LoadAssetsAsync<GameObject>(new [] { muzzleFlashKey, currentLabel }, 
+            (obj) => {
+                // Cette fonction est appelée quand l'asset est chargé
+                SpawnFX(obj);
+            }, Addressables.MergeMode.Intersection); 
+    }
 
-        if (selectedMuzzleFlash != null)
-        {
-            // Instancier l'effet à la position du FirePoint
-            // L'effet de particules est un objet temporaire
-            GameObject flashInstance = Instantiate(selectedMuzzleFlash, firePoint.position, firePoint.rotation);
+    private void SpawnFX(GameObject fxPrefab)
+    {
+        if (fxPrefab == null) return;
 
-            // Optionnel : s'assurer qu'il démarre et est nettoyé
-            ParticleSystem ps = flashInstance.GetComponent<ParticleSystem>();
-            if (ps != null)
-            {
-                ps.Play();
-                
-                // Détruire l'objet une fois que l'effet a terminé pour libérer la mémoire.
-                // Utilisez la durée de vie maximale de l'effet de particules + un petit délai.
-                Destroy(flashInstance, ps.main.duration + 0.1f);
-            }
-            else
-            {
-                // Si ce n'est pas un système de particules, on peut juste le détruire après un court instant.
-                 Destroy(flashInstance, 0.5f);
-            }
-        }
+        // On instancie l'asset chargé
+        GameObject flashInstance = Instantiate(fxPrefab, firePoint.position, firePoint.rotation);
+        
+        // Nettoyage standard (Addressables gère la mémoire de l'asset source, 
+        // mais l'instance doit être détruite ou poolée)
+        Destroy(flashInstance, 2f); 
     }
 }
