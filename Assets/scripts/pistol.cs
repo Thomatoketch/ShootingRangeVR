@@ -27,16 +27,18 @@ public class Pistol : MonoBehaviour
 
     public void FireBullet()
     {
-        //--- Instantiate a bullet and fire it forward
-        GameObject spawnedBullet = Instantiate(bullet);
-        spawnedBullet.tag = "Bullet"; // S'assurer que le tag est bien "bullet"
-        spawnedBullet.transform.position = firePoint.position;
-        spawnedBullet.GetComponent<Rigidbody>().AddForce(firePoint.forward * bulletSpeed, ForceMode.Impulse);
+        // Remplacement de Instantiate par le PoolManager
+        GameObject spawnedBullet = ObjectPoolManager.Instance.SpawnFromPool("Bullet", firePoint.position, firePoint.rotation);
         
-        TriggerMuzzleFlash();
+        if (spawnedBullet != null)
+        {
+            Rigidbody rb = spawnedBullet.GetComponent<Rigidbody>();
+            // On applique la force directement (la vélocité a été reset par OnObjectSpawn)
+            rb.AddForce(firePoint.forward * bulletSpeed, ForceMode.Impulse);
+        }
 
-        //--- Destroy the bullet after 5 seconds
-        Destroy(spawnedBullet, 5);
+        TriggerMuzzleFlash();
+        // Plus de Destroy ici, c'est géré par PooledBullet
     }
 
     private void TriggerMuzzleFlash()
