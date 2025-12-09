@@ -1,16 +1,17 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Collections.Generic; // Nécessaire pour les listes
 
 public class Target : MonoBehaviour, IPooledObject
 {
     [Header("Addressables")]
-    public string hitEffectKey = "HitEffectFX"; // Le nom donné dans le groupe Addressable
+    public string hitEffectKey = "HitEffectFX"; 
     private string currentLabel;
 
     void Start()
     {
-        // Détection simple comme dans le pistolet
+        // CORRECTION ICI : Il faut utiliser "Android" pour correspondre à ton groupe Addressable
         #if UNITY_ANDROID
             currentLabel = "Quest"; 
         #else
@@ -18,11 +19,9 @@ public class Target : MonoBehaviour, IPooledObject
         #endif
     }
 
-    // Cette fonction est appelée automatiquement par le PoolManager quand la cible réapparaît
     public void OnObjectSpawn()
     {
-        // Réinitialisation de l'état (utile si tu as des animations ou des PV)
-        // Par exemple: GetComponent<Collider>().enabled = true;
+        // Réinitialisation (optionnelle pour l'instant)
     }
 
     void OnCollisionEnter(Collision collision)
@@ -33,21 +32,23 @@ public class Target : MonoBehaviour, IPooledObject
             
             TriggerHitEffect(hitPosition);
 
-            // Le script PooledBullet sur la balle s'occupera de stopper sa vélocité au prochain Spawn
+            // Désactivation pour le Pooling
             collision.gameObject.SetActive(false);
-
-            // 2. On désactive la cible (elle retourne dans le pool "Target")
             gameObject.SetActive(false);
         }
     }
 
     private void TriggerHitEffect(Vector3 hitPosition)
     {
-        // Chargement dynamique selon la plateforme
-        Addressables.LoadAssetsAsync<GameObject>(new [] { hitEffectKey, currentLabel }, 
-            (obj) => {
-                SpawnFX(obj, hitPosition);
-            }, Addressables.MergeMode.Intersection);
+        // Note: Utilisation de la liste pour l'intersection (Key + Label)
+        Addressables.LoadAssetsAsync<GameObject>(new List<object> { hitEffectKey, currentLabel }, 
+            null, Addressables.MergeMode.Intersection).Completed += (op) => 
+            {
+                if(op.Status == AsyncOperationStatus.Succeeded && op.Result.Count > 0)
+                {
+                    SpawnFX(op.Result[0], hitPosition);
+                }
+            };
     }
 
     private void SpawnFX(GameObject fxPrefab, Vector3 position)

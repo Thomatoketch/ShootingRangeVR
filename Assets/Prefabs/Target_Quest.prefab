@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
       propertyPath: m_Name
-      value: ArcheryTarget
+      value: Target_Quest
       objectReference: {fileID: 0}
     - target: {fileID: 996418497009081746, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
       propertyPath: m_LocalRotation.w
@@ -80,6 +80,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 9043621831622440160, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 670cc68efb14096449f2394c9b7e236b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -3704563456361051248, guid: dff2f46a6ab0b7b4db9c6dd1e38cb335, type: 3}

@@ -1311,7 +1311,7 @@ MonoBehaviour:
     size: 10
   - tag: Target
     prefab: {fileID: 8520287377114590771, guid: e4d7fc9bedccd7a43b2f79849be09df0, type: 3}
-    size: 4
+    size: 10
 --- !u!4 &1999516028
 Transform:
   m_ObjectHideFlags: 0
