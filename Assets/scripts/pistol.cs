@@ -12,9 +12,11 @@ public class Pistol : MonoBehaviour
     {
         //--- Instantiate a bullet and fire it forward
         GameObject spawnedBullet = Instantiate(bullet);
-        spawnedBullet.transform.position = spawnPoint.position;
-        spawnedBullet.GetComponent<Rigidbody>()
-            .AddForce(spawnPoint.forward * bulletSpeed, ForceMode.Impulse);
+        spawnedBullet.tag = "Bullet"; // S'assurer que le tag est bien "bullet"
+        spawnedBullet.transform.position = firePoint.position;
+        spawnedBullet.GetComponent<Rigidbody>().AddForce(firePoint.forward * bulletSpeed, ForceMode.Impulse);
+        
+        TriggerMuzzleFlash();
 
         //--- Destroy the bullet after 5 seconds
         Destroy(spawnedBullet, 5);
