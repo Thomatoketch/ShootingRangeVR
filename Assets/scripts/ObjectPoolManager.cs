@@ -33,7 +33,7 @@ public class ObjectPoolManager : MonoBehaviour
         
         // Détection automatique de la plateforme (Le fameux filtre)
         #if UNITY_ANDROID
-            currentLabel = "Android";
+            currentLabel = "Quest";
         #else
             currentLabel = "PCVR";
         #endif
@@ -58,9 +58,6 @@ public class ObjectPoolManager : MonoBehaviour
     void LoadAndCreateTargetPool()
     {
         Debug.Log($"Chargement de la cible pour la plateforme : {currentLabel}...");
-
-        // Correction : On utilise LoadAssetsAsync (pluriel) car on utilise une intersection de clés
-        // On demande une liste d'objets qui ont À LA FOIS le nom "TargetPrefab" ET le label "PCVR" (ou "Android")
         Addressables.LoadAssetsAsync<GameObject>(new List<object> { targetAddressableKey, currentLabel }, 
             null, Addressables.MergeMode.Intersection).Completed += (op) => 
             {
