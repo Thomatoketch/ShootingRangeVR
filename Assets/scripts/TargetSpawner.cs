@@ -3,27 +3,31 @@ using System.Collections.Generic;
 
 public class TargetSpawner : MonoBehaviour
 {
-    [Header("Paramètres")]
-    public Transform[] spawnPoints; // Glisse tes points d'apparition ici
-    public float respawnTime = 2f;  // Temps avant qu'une nouvelle cible n'apparaisse
-    public int maxActiveTargets = 3; // Combien de cibles en même temps max ?
+    [Header("Configuration de la Zone")]
+    public Collider spawnZone; // Assigne ici ton BoxCollider (Zone)
+
+    [Header("Paramètres de Jeu")]
+    public float respawnTime = 2f;
+    public int maxActiveTargets = 3;
 
     private float timer;
 
     void Update()
     {
-        // Compte combien de cibles sont actives dans le jeu actuellement
-        // (Note: C'est une méthode simple, pour plus de perf on garderait une liste locale)
+        // 1. Compter les cibles actives
         int activeTargets = 0;
-        foreach(Transform child in ObjectPoolManager.Instance.transform)
+        if (ObjectPoolManager.Instance != null)
         {
-            if (child.gameObject.activeInHierarchy && child.tag == "Target")
+            foreach(Transform child in ObjectPoolManager.Instance.transform)
             {
-                activeTargets++;
+                if (child.gameObject.activeInHierarchy && child.CompareTag("Target"))
+                {
+                    activeTargets++;
+                }
             }
         }
 
-        // Si on a de la place pour une cible
+        // 2. Gestion du temps et du spawn
         if (activeTargets < maxActiveTargets)
         {
             timer += Time.deltaTime;
@@ -37,11 +41,39 @@ public class TargetSpawner : MonoBehaviour
 
     void SpawnTarget()
     {
-        // Choisir un point au hasard
-        int index = Random.Range(0, spawnPoints.Length);
-        Transform spawnPoint = spawnPoints[index];
+        if (spawnZone == null)
+        {
+            Debug.LogError("Attention : Pas de Spawn Zone assignée dans le TargetSpawner !");
+            return;
+        }
 
-        // Demander au PoolManager
-        ObjectPoolManager.Instance.SpawnFromPool("Target", spawnPoint.position, spawnPoint.rotation);
+        // On prend juste un point au hasard, sans se poser de questions
+        Vector3 randomPosition = GetRandomPointInZone();
+
+        // On fait apparaître la cible
+        ObjectPoolManager.Instance.SpawnFromPool("Target", randomPosition, Quaternion.identity);
+    }
+
+    Vector3 GetRandomPointInZone()
+    {
+        // Récupère les limites du Collider
+        Bounds bounds = spawnZone.bounds;
+
+        // Génère une coordonnée aléatoire pour x, y et z à l'intérieur de ces limites
+        float x = Random.Range(bounds.min.x, bounds.max.x);
+        float y = Random.Range(bounds.min.y, bounds.max.y);
+        float z = Random.Range(bounds.min.z, bounds.max.z);
+
+        return new Vector3(x, y, z);
+    }
+
+    // Visuel pour voir la zone dans l'éditeur (optionnel)
+    void OnDrawGizmos()
+    {
+        if (spawnZone != null)
+        {
+            Gizmos.color = new Color(1, 0, 0, 0.3f); // Rouge transparent
+            Gizmos.DrawCube(spawnZone.bounds.center, spawnZone.bounds.size);
+        }
     }
 }

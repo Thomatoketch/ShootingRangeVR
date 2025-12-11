@@ -32,7 +32,4 @@ public class PooledBullet : MonoBehaviour, IPooledObject
     {
         CancelInvoke(); // Sécurité
     }
-    
-    // Si tu touches une cible, le script Target s'occupera de désactiver la balle
-    // Mais il faut remplacer Destroy(collision.gameObject) par collision.gameObject.SetActive(false) dans Target.cs
 }
