@@ -1,62 +1,64 @@
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Collections.Generic; // Nécessaire pour les listes
 
-public class Target : MonoBehaviour
+public class Target : MonoBehaviour, IPooledObject
 {
-    [Header("Références aux Particules (Impact)")]
-    // Références pour assigner les Prefabs optimisés dans l'Inspector
-    public GameObject hitEffectPrefabPCVR;
-    public GameObject hitEffectPrefabQuest;
-
-    // Pour la détection de la plateforme
-    private bool isQuestBuild = false;
+    [Header("Addressables")]
+    public string hitEffectKey = "HitEffectFX"; 
+    private string currentLabel;
 
     void Start()
     {
-        // Détection de la plateforme de compilation : Android (Meta Quest) est la cible mobile.
+        // CORRECTION ICI : Il faut utiliser "Android" pour correspondre à ton groupe Addressable
         #if UNITY_ANDROID
-        isQuestBuild = true;
+            currentLabel = "Quest"; 
+        #else
+            currentLabel = "PCVR";
         #endif
+    }
+
+    public void OnObjectSpawn()
+    {
+        // Réinitialisation (optionnelle pour l'instant)
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        // Vérifie que l'objet entrant en collision est bien une balle
         if (collision.gameObject.CompareTag("Bullet"))
         {
-            // Récupère le point d'impact précis
             Vector3 hitPosition = collision.contacts[0].point;
             
             TriggerHitEffect(hitPosition);
 
-            // Nettoyage : Détruit la balle immédiatement après l'impact pour éviter 
-            // toute nouvelle collision ou d'autres problèmes de physique.
-            Destroy(collision.gameObject); 
+            // Désactivation pour le Pooling
+            collision.gameObject.SetActive(false);
+            gameObject.SetActive(false);
         }
     }
 
     private void TriggerHitEffect(Vector3 hitPosition)
     {
-        // 1. Choisir le préfab d'effet approprié pour la plateforme
-        GameObject selectedHitEffect = isQuestBuild ? hitEffectPrefabQuest : hitEffectPrefabPCVR;
-
-        if (selectedHitEffect != null)
-        {
-            // 2. Instancier l'effet à la position exacte de l'impact
-            GameObject hitInstance = Instantiate(selectedHitEffect, hitPosition, Quaternion.identity);
-
-            // 3. Nettoyage : Détruire l'instance une fois l'effet terminé
-            ParticleSystem ps = hitInstance.GetComponent<ParticleSystem>();
-            if (ps != null)
+        // Note: Utilisation de la liste pour l'intersection (Key + Label)
+        Addressables.LoadAssetsAsync<GameObject>(new List<object> { hitEffectKey, currentLabel }, 
+            null, Addressables.MergeMode.Intersection).Completed += (op) => 
             {
-                ps.Play();
-                // Détruire l'objet après la durée de vie du système de particules + un petit délai
-                Destroy(hitInstance, ps.main.duration + 0.1f);
-            }
-            else
-            {
-                 // Si l'objet n'a pas de ParticleSystem, le détruire après un court instant par défaut
-                 Destroy(hitInstance, 1.0f);
-            }
-        }
+                if(op.Status == AsyncOperationStatus.Succeeded && op.Result.Count > 0)
+                {
+                    SpawnFX(op.Result[0], hitPosition);
+                }
+            };
+    }
+
+    private void SpawnFX(GameObject fxPrefab, Vector3 position)
+    {
+        if (fxPrefab == null) return;
+
+        GameObject hitInstance = Instantiate(fxPrefab, position, Quaternion.identity);
+        
+        ParticleSystem ps = hitInstance.GetComponent<ParticleSystem>();
+        float duration = (ps != null) ? ps.main.duration : 1.0f;
+        Destroy(hitInstance, duration + 0.1f); 
     }
 }
