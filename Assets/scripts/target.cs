@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using System.Collections.Generic; // Nécessaire pour les listes
+using System.Collections.Generic;
 
 public class Target : MonoBehaviour, IPooledObject
 {
@@ -11,7 +11,7 @@ public class Target : MonoBehaviour, IPooledObject
 
     void Start()
     {
-        // CORRECTION ICI : Il faut utiliser "Android" pour correspondre à ton groupe Addressable
+        // Définition de la plateforme pour les Addressables
         #if UNITY_ANDROID
             currentLabel = "Quest"; 
         #else
@@ -21,26 +21,30 @@ public class Target : MonoBehaviour, IPooledObject
 
     public void OnObjectSpawn()
     {
-        // Réinitialisation (optionnelle pour l'instant)
     }
 
     void OnCollisionEnter(Collision collision)
     {
+        // Vérifie que l'objet qui touche est bien une balle
         if (collision.gameObject.CompareTag("Bullet"))
         {
             Vector3 hitPosition = collision.contacts[0].point;
             
+            // 1. Jouer l'effet visuel (particules)
             TriggerHitEffect(hitPosition);
 
-            // Désactivation pour le Pooling
+            // 2. "Détruire" la balle (la renvoyer au pool)
             collision.gameObject.SetActive(false);
+
+            // 3. "Détruire" la cible (la renvoyer au pool)
+            // C'est cette ligne qui libère la place pour le TargetSpawner
             gameObject.SetActive(false);
         }
     }
 
     private void TriggerHitEffect(Vector3 hitPosition)
     {
-        // Note: Utilisation de la liste pour l'intersection (Key + Label)
+        // Chargement et instanciation de l'effet d'impact
         Addressables.LoadAssetsAsync<GameObject>(new List<object> { hitEffectKey, currentLabel }, 
             null, Addressables.MergeMode.Intersection).Completed += (op) => 
             {

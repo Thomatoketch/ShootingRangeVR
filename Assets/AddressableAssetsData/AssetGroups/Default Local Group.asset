@@ -33,17 +33,17 @@ MonoBehaviour:
     m_SerializedLabels:
     - Quest
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca1d21c825bd8bc408394166dae62e43
+    m_Address: TargetPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PCVR
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d6c6f0f5e9a40a84382180ac3b1401d9
     m_Address: TargetPrefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - Quest
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e4d7fc9bedccd7a43b2f79849be09df0
-    m_Address: TargetPrefab
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - PCVR
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e92b7ded0c14a024381f086600a390d3
     m_Address: HitEffectFX
