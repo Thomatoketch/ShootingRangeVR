@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class PooledBullet : MonoBehaviour, IPooledObject
 {
@@ -12,24 +13,23 @@ public class PooledBullet : MonoBehaviour, IPooledObject
 
     public void OnObjectSpawn()
     {
-        // Reset complet de la physique obligatoire
         if(rb != null)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
         
-        // Lance le timer de désactivation
-        Invoke("DisableObject", lifeTime);
+        StartCoroutine(DeactivateAfterTime());
     }
 
-    void DisableObject()
+    IEnumerator DeactivateAfterTime()
     {
+        yield return new WaitForSeconds(lifeTime);
         gameObject.SetActive(false);
     }
 
     void OnDisable()
     {
-        CancelInvoke(); // Sécurité
+        StopAllCoroutines(); 
     }
 }

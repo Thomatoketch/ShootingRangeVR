@@ -1,67 +1,69 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AddressableAssets; // Indispensable
+using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Collections.Generic; // Ajouté pour la List
 
 public class Pistol : MonoBehaviour
 {
     [Header("Références au Gameplay")]
-    public Transform firePoint; // L'objet vide pour déterminer la sortie du canon
-    public GameObject bullet; // Votre préfabriqué de projectile
+    public Transform firePoint; 
+    // Suppression de 'public GameObject bullet' (inutile avec le pooling)
     public float bulletSpeed = 20f;
 
     [Header("Addressables Keys")]
     public string muzzleFlashKey = "MuzzleFlashFX";
     private string currentLabel;
+    private GameObject loadedMuzzleFlashPrefab; // On stocke le prefab ici
 
     void Start()
     {
-        // Une manière simple et efficace de détecter si on est sur une build Android (typiquement pour Quest)
-        // Cette portion de code ne sera incluse que si la plateforme de build est Android.
         #if UNITY_ANDROID
             currentLabel = "Quest"; 
         #else
             currentLabel = "PCVR";
         #endif
+
+        // On précharge l'effet dès le début du jeu
+        LoadMuzzleFlashAsset();
+    }
+
+    void LoadMuzzleFlashAsset()
+    {
+        Addressables.LoadAssetsAsync<GameObject>(new List<object> { muzzleFlashKey, currentLabel }, 
+            null, Addressables.MergeMode.Intersection).Completed += (op) => 
+            {
+                if(op.Status == AsyncOperationStatus.Succeeded && op.Result.Count > 0)
+                {
+                    loadedMuzzleFlashPrefab = op.Result[0];
+                }
+            };
     }
 
     public void FireBullet()
     {
-        // Remplacement de Instantiate par le PoolManager
+        // Utilisation du Pool
         GameObject spawnedBullet = ObjectPoolManager.Instance.SpawnFromPool("Bullet", firePoint.position, firePoint.rotation);
         
         if (spawnedBullet != null)
         {
             Rigidbody rb = spawnedBullet.GetComponent<Rigidbody>();
-            // On applique la force directement (la vélocité a été reset par OnObjectSpawn)
-            rb.AddForce(firePoint.forward * bulletSpeed, ForceMode.Impulse);
+            if (rb != null)
+            {
+                rb.AddForce(firePoint.forward * bulletSpeed, ForceMode.Impulse);
+            }
         }
 
-        TriggerMuzzleFlash();
-        // Plus de Destroy ici, c'est géré par PooledBullet
+        // Appel de l'effet visuel optimisé
+        PlayMuzzleFlash();
     }
 
-    private void TriggerMuzzleFlash()
+    private void PlayMuzzleFlash()
     {
-        // Chargement dynamique avec Addressables
-        // Note: On combine Key et Label pour filtrer
-        Addressables.LoadAssetsAsync<GameObject>(new [] { muzzleFlashKey, currentLabel }, 
-            (obj) => {
-                // Cette fonction est appelée quand l'asset est chargé
-                SpawnFX(obj);
-            }, Addressables.MergeMode.Intersection); 
-    }
-
-    private void SpawnFX(GameObject fxPrefab)
-    {
-        if (fxPrefab == null) return;
-
-        // On instancie l'asset chargé
-        GameObject flashInstance = Instantiate(fxPrefab, firePoint.position, firePoint.rotation);
-        
-        // Nettoyage standard (Addressables gère la mémoire de l'asset source, 
-        // mais l'instance doit être détruite ou poolée)
-        Destroy(flashInstance, 2f); 
+        if (loadedMuzzleFlashPrefab != null)
+        {
+            // Idéalement, on devrait aussi pooler les FX, mais Instantiate ici est déjà mieux que LoadAssetsAsync + Instantiate
+            Instantiate(loadedMuzzleFlashPrefab, firePoint.position, firePoint.rotation);
+            // Pas de Destroy() ici : assure-toi que le prefab MuzzleFlash a le script "AutoDisableFX" dessus.
+        }
     }
 }
