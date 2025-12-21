@@ -1,24 +1,26 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Pistol : MonoBehaviour
 {
-    public GameObject bullet;
-    public Transform spawnPoint;
+    [Header("Références")]
+    public Transform firePoint; 
     public float bulletSpeed = 20f;
 
     public void FireBullet()
     {
-        //--- Instantiate a bullet and fire it forward
-        GameObject spawnedBullet = Instantiate(bullet);
-        spawnedBullet.tag = "Bullet"; // S'assurer que le tag est bien "bullet"
-        spawnedBullet.transform.position = firePoint.position;
-        spawnedBullet.GetComponent<Rigidbody>().AddForce(firePoint.forward * bulletSpeed, ForceMode.Impulse);
+        // 1. Spawn de la balle via le Pool
+        GameObject spawnedBullet = ObjectPoolManager.Instance.SpawnFromPool("Bullet", firePoint.position, firePoint.rotation);
         
-        TriggerMuzzleFlash();
+        if (spawnedBullet != null)
+        {
+            Rigidbody rb = spawnedBullet.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.AddForce(firePoint.forward * bulletSpeed, ForceMode.Impulse);
+            }
+        }
 
-        //--- Destroy the bullet after 5 seconds
-        Destroy(spawnedBullet, 5);
+        // 2. Spawn du MuzzleFlash via le Pool (Addressable géré par le Manager)
+        ObjectPoolManager.Instance.SpawnFromPool("MuzzleFlash", firePoint.position, firePoint.rotation);
     }
 }

@@ -1,21 +1,38 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Target : MonoBehaviour
+public class Target : MonoBehaviour, IPooledObject
 {
-    public GameObject hitEffectPrefab;  // Effet de particules à assigner
+    public void OnObjectSpawn()
+    {
+    }
 
     void OnCollisionEnter(Collision collision)
     {
+        Debug.Log($"Collision cible avec : {collision.gameObject.name} (Tag: {collision.gameObject.tag})");
+
         if (collision.gameObject.CompareTag("Bullet"))
         {
-            // Faire apparaître l'effet de particules à la position de la cible
-            Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+            Vector3 hitPosition = collision.contacts[0].point;
+            
+            ObjectPoolManager.Instance.SpawnFromPool("HitEffect", hitPosition, Quaternion.identity);
 
-            // Détruire la cible
-            Destroy(gameObject);
+            if (GameplayManager.Instance != null)
+            {
+                GameplayManager.Instance.AddScore(1); 
+                Debug.Log("Score ajoutÃ© !");
+            }
+            else
+            {
+                Debug.LogError("GameplayManager introuvable !");
+            }
+
+            if (TargetSpawner.Instance != null)
+            {
+                TargetSpawner.Instance.RegisterTargetDespawn();
+            }
+
+            collision.gameObject.SetActive(false);
+            gameObject.SetActive(false);
         }
     }
-
 }
