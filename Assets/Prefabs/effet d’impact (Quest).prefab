@@ -4903,6 +4903,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3217717503025735101}
+  - component: {fileID: -6886236393334940280}
   m_Layer: 0
   m_Name: "effet d\u2019impact (Quest)"
   m_TagString: Untagged
@@ -4928,6 +4929,19 @@ Transform:
   - {fileID: 4725227878849442339}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-6886236393334940280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5866567344785817314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7507abb1db3157448da3dd08302860a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoDisableFX
+  duration: 1
 --- !u!1 &6003915476470558646
 GameObject:
   m_ObjectHideFlags: 0
