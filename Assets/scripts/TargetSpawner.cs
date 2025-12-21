@@ -3,6 +3,8 @@ using System.Collections;
 
 public class TargetSpawner : MonoBehaviour
 {
+    public static TargetSpawner Instance { get; private set; }
+
     [Header("Configuration de la Zone")]
     public Collider spawnZone;
 
@@ -10,28 +12,29 @@ public class TargetSpawner : MonoBehaviour
     public float checkInterval = 2f; 
     public int maxActiveTargets = 3;
 
+    private int currentActiveTargets = 0;
+
+    void Awake()
+    {
+        Instance = this;
+    }
+
     void Start()
     {
         StartCoroutine(SpawnRoutine());
+    }
+
+    public void RegisterTargetDespawn()
+    {
+        currentActiveTargets--;
+        if (currentActiveTargets < 0) currentActiveTargets = 0;
     }
 
     IEnumerator SpawnRoutine()
     {
         while (true)
         {
-            int activeTargets = 0;
-            if (ObjectPoolManager.Instance != null)
-            {
-                foreach(Transform child in ObjectPoolManager.Instance.transform)
-                {
-                    if (child.gameObject.activeInHierarchy && child.CompareTag("Target"))
-                    {
-                        activeTargets++;
-                    }
-                }
-            }
-
-            if (activeTargets < maxActiveTargets)
+            if (currentActiveTargets < maxActiveTargets)
             {
                 SpawnTarget();
             }
@@ -45,7 +48,12 @@ public class TargetSpawner : MonoBehaviour
         if (spawnZone == null) return;
 
         Vector3 randomPosition = GetRandomPointInZone();
-        ObjectPoolManager.Instance.SpawnFromPool("Target", randomPosition, Quaternion.identity);
+        GameObject target = ObjectPoolManager.Instance.SpawnFromPool("Target", randomPosition, Quaternion.identity);
+        
+        if (target != null)
+        {
+            currentActiveTargets++;
+        }
     }
 
     Vector3 GetRandomPointInZone()

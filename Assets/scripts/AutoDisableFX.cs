@@ -1,9 +1,14 @@
 using UnityEngine;
 using System.Collections;
 
-public class AutoDisableFX : MonoBehaviour
+public class AutoDisableFX : MonoBehaviour, IPooledObject
 {
     public float duration = 1.0f;
+
+    public void OnObjectSpawn()
+    {
+        StartCoroutine(DisableRoutine());
+    }
 
     void OnEnable()
     {
@@ -13,6 +18,6 @@ public class AutoDisableFX : MonoBehaviour
     IEnumerator DisableRoutine()
     {
         yield return new WaitForSeconds(duration);
-        Destroy(gameObject); 
+        gameObject.SetActive(false);
     }
 }

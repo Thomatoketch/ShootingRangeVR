@@ -1,5 +1,5 @@
 using UnityEngine;
-using TMPro; // Nécessaire pour TextMeshPro
+using TMPro;
 using System.Collections;
 
 public class ScoreUI : MonoBehaviour
@@ -10,6 +10,7 @@ public class ScoreUI : MonoBehaviour
 
     void Start()
     {
+        if (scoreText == null) Debug.LogError("ScoreUI : Le champ TextMeshPro n'est pas assigné !");
         StartCoroutine(UpdateScoreRoutine());
     }
 
@@ -22,7 +23,6 @@ public class ScoreUI : MonoBehaviour
                 int score = GameplayManager.Instance.GetScore();
                 scoreText.text = "Score : " + score;
             }
-
             yield return new WaitForSeconds(refreshRate);
         }
     }

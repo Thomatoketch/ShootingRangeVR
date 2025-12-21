@@ -1,37 +1,48 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AddressableAssets; // Indispensable pour la Task 4
+using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class ObjectPoolManager : MonoBehaviour
 {
     public static ObjectPoolManager Instance;
 
+    // Classe pour configurer les pools classiques (non-Addressables)
     [System.Serializable]
     public class Pool
     {
         public string tag;
         public GameObject prefab;
         public int size;
-        public bool isAddressable; // Nouvelle option pour différencier les balles des cibles
     }
 
-    public List<Pool> pools;
-    public Dictionary<string, Queue<GameObject>> poolDictionary;
+    // Classe pour configurer les pools Addressables (VFX + Cibles)
+    [System.Serializable]
+    public class AddressablePoolData
+    {
+        public string tag; // Ex: "Target", "MuzzleFlash", "HitEffect"
+        public string addressableKey; // La clé dans ton groupe Addressable
+        public int size;
+    }
 
-    // --- NOUVEAU : Configuration Task 4 (Addressables) ---
-    [Header("Task 4 - Addressable Target")]
-    public string targetAddressableKey = "TargetPrefab"; // Le nom "Key" mis dans le groupe Addressable
-    public int targetPoolSize = 10;
-    private string currentLabel; // "PCVR" ou "Android"
+    [Header("Configuration des Pools")]
+    public List<Pool> standardPools; // Pour les balles classiques
+    public List<AddressablePoolData> addressablePools; // Pour Cibles et VFX
+
+    public Dictionary<string, Queue<GameObject>> poolDictionary;
+    private string currentLabel;
+
+    [Header("Task 2 - Optimisation Projectiles")]
+    public float cleanupInterval = 0.5f;
+    public float maxBulletDistance = 50f;
+    private List<GameObject> activeBullets = new List<GameObject>();
 
     void Awake()
     {
         Instance = this;
         poolDictionary = new Dictionary<string, Queue<GameObject>>();
         
-        // Détection automatique de la plateforme (Le fameux filtre)
         #if UNITY_ANDROID
             currentLabel = "Quest";
         #else
@@ -41,42 +52,41 @@ public class ObjectPoolManager : MonoBehaviour
 
     void Start()
     {
-        // 1. On crée les pools classiques (ex: Balles)
-        foreach (Pool pool in pools)
+        // 1. Pools Standards (Balles)
+        foreach (Pool pool in standardPools)
         {
-            if (!pool.isAddressable && pool.prefab != null)
-            {
-                CreatePool(pool.tag, pool.prefab, pool.size);
-            }
+            CreatePool(pool.tag, pool.prefab, pool.size);
         }
 
-        // 2. On lance le chargement intelligent de la Cible via Addressables
-        LoadAndCreateTargetPool();
+        // 2. Pools Addressables (Cibles + VFX)
+        foreach (AddressablePoolData data in addressablePools)
+        {
+            LoadAndCreateAddressablePool(data);
+        }
+
+        // 3. Lancer le nettoyage automatique des balles
+        StartCoroutine(CleanupBulletsRoutine());
     }
 
-    // Cette fonction télécharge le bon asset (PC ou Quest) puis crée le pool
-    void LoadAndCreateTargetPool()
+    void LoadAndCreateAddressablePool(AddressablePoolData data)
     {
-        Debug.Log($"Chargement de la cible pour la plateforme : {currentLabel}...");
-        Addressables.LoadAssetsAsync<GameObject>(new List<object> { targetAddressableKey, currentLabel }, 
+        // Chargement avec Filtre (Label) + Clé
+        Addressables.LoadAssetsAsync<GameObject>(new List<object> { data.addressableKey, currentLabel }, 
             null, Addressables.MergeMode.Intersection).Completed += (op) => 
             {
                 if (op.Status == AsyncOperationStatus.Succeeded && op.Result.Count > 0)
                 {
-                    // On prend le premier (et unique) résultat trouvé
                     GameObject loadedPrefab = op.Result[0];
-                    
-                    CreatePool("Target", loadedPrefab, targetPoolSize);
-                    Debug.Log("Pool 'Target' créé avec succès via Addressables !");
+                    CreatePool(data.tag, loadedPrefab, data.size);
+                    Debug.Log($"Pool Addressable créé : {data.tag}");
                 }
                 else
                 {
-                    Debug.LogError("Erreur : Impossible de charger le TargetPrefab. Vérifie les Groupes Addressables.");
+                    Debug.LogError($"Erreur chargement Addressable : {data.tag} (Clé: {data.addressableKey})");
                 }
             };
     }
 
-    // Fonction utilitaire pour créer concrètement les objets
     void CreatePool(string tag, GameObject prefab, int size)
     {
         Queue<GameObject> objectPool = new Queue<GameObject>();
@@ -87,8 +97,9 @@ public class ObjectPoolManager : MonoBehaviour
             obj.SetActive(false);
             obj.transform.SetParent(this.transform);
             
-            // On force le tag pour être sûr que le script Target.cs fonctionne
+            // On force le tag pour être sûr que les scripts fonctionnent
             if(tag == "Target") obj.tag = "Target"; 
+            if(tag == "Bullet") obj.tag = "Bullet";
             
             objectPool.Enqueue(obj);
         }
@@ -101,13 +112,10 @@ public class ObjectPoolManager : MonoBehaviour
 
     public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation)
     {
-        if (!poolDictionary.ContainsKey(tag))
+        if (!poolDictionary.ContainsKey(tag) || poolDictionary[tag].Count == 0)
         {
-            // Pas d'erreur critique ici, car le pool peut être encore en cours de chargement
-            return null; 
+            return null; // Pool pas encore prêt ou vide
         }
-
-        if (poolDictionary[tag].Count == 0) return null;
 
         GameObject objectToSpawn = poolDictionary[tag].Dequeue();
 
@@ -115,7 +123,7 @@ public class ObjectPoolManager : MonoBehaviour
         objectToSpawn.transform.position = position;
         objectToSpawn.transform.rotation = rotation;
 
-        // Reset de l'objet (Vitesse balle, PV cible, etc.)
+        // Reset spécifique si l'objet implémente l'interface (Balles, FX, etc.)
         IPooledObject pooledObj = objectToSpawn.GetComponent<IPooledObject>();
         if (pooledObj != null)
         {
@@ -124,6 +132,36 @@ public class ObjectPoolManager : MonoBehaviour
 
         poolDictionary[tag].Enqueue(objectToSpawn);
 
+        if (tag == "Bullet")
+        {
+            activeBullets.Add(objectToSpawn);
+        }
+
         return objectToSpawn;
+    }
+
+    IEnumerator CleanupBulletsRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(cleanupInterval);
+
+            for (int i = activeBullets.Count - 1; i >= 0; i--)
+            {
+                GameObject bullet = activeBullets[i];
+
+                if (!bullet.activeInHierarchy)
+                {
+                    activeBullets.RemoveAt(i);
+                    continue;
+                }
+
+                if (Vector3.Distance(transform.position, bullet.transform.position) > maxBulletDistance)
+                {
+                    bullet.SetActive(false);
+                    activeBullets.RemoveAt(i);
+                }
+            }
+        }
     }
 }

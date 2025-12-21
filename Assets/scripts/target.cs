@@ -1,60 +1,38 @@
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
-using System.Collections.Generic;
 
 public class Target : MonoBehaviour, IPooledObject
 {
-    [Header("Addressables")]
-    public string hitEffectKey = "HitEffectFX"; 
-    private string currentLabel;
-
-    void Start()
-    {
-        #if UNITY_ANDROID
-            currentLabel = "Quest"; 
-        #else
-            currentLabel = "PCVR";
-        #endif
-    }
-
     public void OnObjectSpawn()
     {
     }
 
     void OnCollisionEnter(Collision collision)
     {
+        Debug.Log($"Collision cible avec : {collision.gameObject.name} (Tag: {collision.gameObject.tag})");
+
         if (collision.gameObject.CompareTag("Bullet"))
         {
             Vector3 hitPosition = collision.contacts[0].point;
             
-            TriggerHitEffect(hitPosition);
+            ObjectPoolManager.Instance.SpawnFromPool("HitEffect", hitPosition, Quaternion.identity);
 
             if (GameplayManager.Instance != null)
             {
-                GameplayManager.Instance.AddScore(10); 
+                GameplayManager.Instance.AddScore(1); 
+                Debug.Log("Score ajouté !");
+            }
+            else
+            {
+                Debug.LogError("GameplayManager introuvable !");
+            }
+
+            if (TargetSpawner.Instance != null)
+            {
+                TargetSpawner.Instance.RegisterTargetDespawn();
             }
 
             collision.gameObject.SetActive(false);
             gameObject.SetActive(false);
         }
-    }
-
-    private void TriggerHitEffect(Vector3 hitPosition)
-    {
-        Addressables.LoadAssetsAsync<GameObject>(new List<object> { hitEffectKey, currentLabel }, 
-            null, Addressables.MergeMode.Intersection).Completed += (op) => 
-            {
-                if(op.Status == AsyncOperationStatus.Succeeded && op.Result.Count > 0)
-                {
-                    SpawnFX(op.Result[0], hitPosition);
-                }
-            };
-    }
-
-    private void SpawnFX(GameObject fxPrefab, Vector3 position)
-    {
-        if (fxPrefab == null) return;
-        Instantiate(fxPrefab, position, Quaternion.identity);
     }
 }
