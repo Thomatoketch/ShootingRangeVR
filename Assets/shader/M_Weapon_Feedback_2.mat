@@ -58,7 +58,7 @@ Material:
     - _QueueOffset: 0
     - _RimPower: 0
     m_Colors:
-    - _BaseColor: {r: 0.4339623, g: 0.4339623, b: 0.4339623, a: 1}
+    - _BaseColor: {r: 0.41568628, g: 0.41568628, b: 0.41568628, a: 1}
     - _GrabColor: {r: 1, g: 0.99265313, b: 0, a: 1}
     - _HoverColor: {r: 1, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
