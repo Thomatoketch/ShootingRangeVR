@@ -73,3 +73,8 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+Assets/Prefabs/soldier/Picking Up.fbx
+Assets/Prefabs/soldier/Running.fbx
+Assets/Prefabs/soldier/Walking.fbx
+Assets/Prefabs/soldier/Pistol Idle.fbx
+Assets/Prefabs/soldier/Pistol Idle Aim.fbx

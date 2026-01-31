@@ -1,14 +1,16 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+// using UnityEngine.XR.Interaction.Toolkit; // Pas nécessaire pour cette partie du TP
 
 public class WeaponFeedback : MonoBehaviour
 {
+    [Header("Configuration TP")]
+    public Transform player;           // Glisse ton Soldat ici
+    public float hoverThreshold = 2.5f; // Distance pour activer le Hover
+
     private Renderer[] _renderers;
     private MaterialPropertyBlock _propBlock;
     
-    // Cette variable sert de verrou de sécurité
-    private bool _isGrabbed = false; 
-
+    // IDs des propriétés Shader
     private static readonly int HoverPropID = Shader.PropertyToID("_Hover");
     private static readonly int GrabPropID = Shader.PropertyToID("_Grab");
 
@@ -18,37 +20,42 @@ public class WeaponFeedback : MonoBehaviour
         _propBlock = new MaterialPropertyBlock();
     }
 
-    public void OnHoverEnter()
+    void Update()
     {
-        // SI on tient déjà l'objet, on ignore le Hover (le Grab est prioritaire)
-        if (_isGrabbed) return;
-        
-        UpdateShader(1f, 0f);
-    }
+        if (player == null) return;
 
-    public void OnHoverExit()
-    {
-        // SI on tient l'objet, on interdit au Hover Exit d'éteindre la lumière
-        if (_isGrabbed) return;
+        // 1. DÉTECTION "GRAB" (Est-ce que l'arme est équipée ?) 
+        // On vérifie si l'arme est devenue enfant du joueur (attachée au Socket main)
+        // ou on peut vérifier une variable booléenne si tu en as une ailleurs.
+        bool isEquipped = transform.root == player.root;
 
-        UpdateShader(0f, 0f);
-    }
+        if (isEquipped)
+        {
+            // État GRAB : On allume _Grab, on éteint _Hover
+            UpdateShader(0f, 1f);
+        }
+        else
+        {
+            // 2. DÉTECTION "HOVER" (Distance) 
+            // Si l'arme est au sol, on regarde la distance avec le joueur
+            float distance = Vector3.Distance(transform.position, player.position);
 
-    public void OnGrabEnter()
-    {
-        _isGrabbed = true; // On verrouille
-        UpdateShader(0f, 1f);
-    }
-
-    public void OnGrabExit()
-    {
-        _isGrabbed = false; // On déverrouille
-        // Quand on relâche, on remet à 0 (ou à Hover si tu préfères)
-        UpdateShader(0f, 0f);
+            if (distance <= hoverThreshold)
+            {
+                // État HOVER : On allume _Hover
+                UpdateShader(1f, 0f);
+            }
+            else
+            {
+                // État NEUTRE : Tout éteint
+                UpdateShader(0f, 0f);
+            }
+        }
     }
 
     private void UpdateShader(float hoverValue, float grabValue)
     {
+        // On remplit le bloc de propriétés (plus performant que material.SetFloat) 
         _propBlock.SetFloat(HoverPropID, hoverValue);
         _propBlock.SetFloat(GrabPropID, grabValue);
 
